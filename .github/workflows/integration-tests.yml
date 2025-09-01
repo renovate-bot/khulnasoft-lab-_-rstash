@@ -582,7 +582,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build
     container:
-      image: rocm/dev-ubuntu-24.04:6.3
+      image: rocm/dev-ubuntu-24.04:6.4
 
     env:
       # RSTASH_GHA_ENABLED: "on"
