@@ -1,0 +1,973 @@
+name: integration-tests
+on: [ push, pull_request ]
+
+env:
+  RUST_BACKTRACE: full
+  RUST_LOG: debug
+  RSTASH_PATH: /home/runner/.cargo/bin/rstash
+  ACTIONS_CACHE_SERVICE_V2: on
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - name: Build
+        run: |
+          cargo build --all-features
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: integration-tests
+          path: ./target/debug/rstash
+
+  redis-deprecated:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+    env:
+      RSTASH_REDIS: redis://127.0.0.1
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep redis
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  redis:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+    env:
+      RSTASH_REDIS_ENDPOINT: tcp://127.0.0.1
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep redis
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  s3_minio:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    # Setup minio server
+    services:
+      minio:
+        image: wktk/minio-server
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ACCESS_KEY: "minioadmin"
+          MINIO_SECRET_KEY: "minioadmin"
+
+    env:
+      RSTASH_BUCKET: test
+      RSTASH_ENDPOINT: http://127.0.0.1:9000/
+      RSTASH_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: "minioadmin"
+      AWS_SECRET_ACCESS_KEY: "minioadmin"
+      AWS_EC2_METADATA_DISABLED: "true"
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup test bucket
+        run: aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://test
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep s3
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  azblob_azurite:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    # Setup azurite server
+    services:
+      azurite:
+        image: mcr.microsoft.com/azure-storage/azurite
+        ports:
+          - 10000:10000
+
+    env:
+      RSTASH_AZURE_BLOB_CONTAINER: "test"
+      RSTASH_AZURE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup test bucket
+        run: |
+          az storage container create \
+              --name test \
+              --connection-string ${RSTASH_AZURE_CONNECTION_STRING}
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep azblob
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  gha:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      RSTASH_GHA_ENABLED: "on"
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Configure Cache Env
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_RESULTS_URL', process.env.ACTIONS_RESULTS_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep gha
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  memcached-deprecated:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    # Setup memcached server
+    services:
+      memcached:
+        image: bitnami/memcached
+        env:
+          # memcache's max item size is 1MiB, But our tests
+          # will produce larger file.
+          #
+          # Specify the setting here to make our test happy.
+          MEMCACHED_MAX_ITEM_SIZE: 16777216
+        ports:
+          - 11211:11211
+
+    env:
+      RSTASH_MEMCACHED: "tcp://127.0.0.1:11211"
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep memcached
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  memcached:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    # Setup memcached server
+    services:
+      memcached:
+        image: bitnami/memcached
+        env:
+          # memcache's max item size is 1MiB, But our tests
+          # will produce larger file.
+          #
+          # Specify the setting here to make our test happy.
+          MEMCACHED_MAX_ITEM_SIZE: 16777216
+        ports:
+          - 11211:11211
+
+    env:
+      RSTASH_MEMCACHED_ENDPOINT: "tcp://127.0.0.1:11211"
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep memcached
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  webdav:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      RSTASH_WEBDAV_ENDPOINT: "http://127.0.0.1:8080"
+      RSTASH_WEBDAV_USERNAME: "bar"
+      RSTASH_WEBDAV_PASSWORD: "baz"
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start nginx
+        shell: bash
+        run: |
+          sudo apt install -y nginx-full
+
+          mkdir /tmp/static
+          cp `pwd`/tests/htpasswd /tmp/htpasswd
+          nginx -c `pwd`/tests/nginx_http_cache.conf
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep webdav
+
+      - name: Test Twice for Cache Read
+        run: cargo clean && cargo build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  test-mock-msvc:
+    runs-on: windows-2019
+    env:
+      TARGET: x86_64-pc-windows-msvc
+      RSTASH_EXE: ${{ github.workspace }}\\target\\x86_64-pc-windows-msvc\\debug\\rstash.exe
+      RSTASH_LOG: "debug"
+      RSTASH_ERROR_LOG: "${{ github.workspace }}\\server_log.txt"
+
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+          target: $TARGET
+
+      - name: Build
+        run: cargo build --bin rstash --target $env:TARGET --features=vendored-openssl
+
+      - name: Compile MSVC (no cache)
+        shell: bash
+        working-directory: ./tests/msvc
+        run: |
+          cl "@args.rsp"
+          test -e ./foo.o || { echo "No compiler output found"; exit -1; }
+
+      - name: Start Server
+        shell: bash
+        run: $RSTASH_EXE --start-server
+
+      - name: Compile - Cache Miss
+        shell: bash
+        working-directory: ./tests/msvc
+        run: |
+          rm ./foo.o || true
+          $RSTASH_EXE "$(where cl.exe)" -c "@args.rsp"
+          $RSTASH_EXE --show-stats
+          $RSTASH_EXE --show-stats | grep -e "Cache misses\s*[1-9]"
+          test -e ./foo.o || { echo "No compiler output found"; exit -1; }
+          test -e ./foo.o.json || { echo "No dependency list found"; exit -1; }
+
+      - name: Compile - Cache Hit
+        shell: bash
+        working-directory: ./tests/msvc
+        run: |
+          rm ./foo.o || true
+          $RSTASH_EXE "$(where cl.exe)" -c "@args.rsp"
+          $RSTASH_EXE --show-stats
+          $RSTASH_EXE --show-stats | grep -e "Cache hits\s*[1-9]"
+          test -e ./foo.o || { echo "No compiler output found"; exit -1; }
+          test -e ./foo.o.json || { echo "No dependency list found"; exit -1; }
+
+      - name: Compile - Preprocessing Compiler Bug
+        shell: bash
+        working-directory: ./tests/msvc-preprocessing
+        run: |
+          $RSTASH_EXE "$(where cl.exe)" -c "@args.rsp"
+          $RSTASH_EXE --show-stats
+
+      - name: Stop Server
+        if: success() || failure()
+        shell: bash
+        run: $RSTASH_EXE --stop-server
+
+      - name: Show Server Log
+        if: success() || failure()
+        shell: bash
+        run: cat "$RSTASH_ERROR_LOG"
+
+  clang:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      LLVM_VERSION: "19"
+      RSTASH_GHA_ENABLED: "on"
+      RSTASH_SERVER_UDS: "\\x00rstash.socket"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Cache Env
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_RESULTS_URL', process.env.ACTIONS_RESULTS_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '')
+
+      - name: Install clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh "${LLVM_VERSION}"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: |
+          export CXX="${RSTASH_PATH} clang++"
+          $CXX -c `pwd`/tests/test_clang_multicall.c
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+      - name: Test Twice for Cache Read
+        run: |
+          export CXX="${RSTASH_PATH} clang++"
+          $CXX -c `pwd`/tests/test_clang_multicall.c
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  hip:
+    # Probably wouldn't matter anyway since we run in a container, but staying
+    # close to the version is better than not.
+    runs-on: ubuntu-24.04
+    needs: build
+    container:
+      image: rocm/dev-ubuntu-24.04:6.3
+
+    env:
+      # RSTASH_GHA_ENABLED: "on"
+      ROCM_PATH: "/opt/rocm"
+      RANDOMIZE_READDIR_LOG: "/tmp/readdir.log"
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      # I don't want to break the cache during testing. Will turn on after I
+      # make sure it's working.
+      #
+      # - name: Configure Cache Env
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       core.exportVariable('ACTIONS_RESULTS_URL', process.env.ACTIONS_RESULTS_URL || '');
+      #       core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '')
+
+      # - name: Configure ROCm Env
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       core.exportVariable('ROCM_PATH', process.env.ROCM_PATH || '');
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          ## Install dependencies
+          sudo apt-get update
+          sudo apt-get install -y cmake curl
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - name: Build & setup librandomize_readdir
+        run: |
+          cargo build -p randomize_readdir
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      # Ensure that HIPCC isn't already borken
+      - name: Sanity Check
+        run: |
+          export LD_PRELOAD=$PWD/target/debug/librandomize_readdir.so
+          hipcc -o vectoradd_hip --offload-arch=gfx900 tests/cmake-hip/vectoradd_hip.cpp
+
+      - name: Test
+        run: |
+          export LD_PRELOAD=$PWD/target/debug/librandomize_readdir.so
+          rm "$RANDOMIZE_READDIR_LOG".*
+          cmake -B build -S tests/cmake-hip -DCMAKE_HIP_COMPILER_LAUNCHER=${RSTASH_PATH} -DCMAKE_HIP_ARCHITECTURES=gfx900
+          cmake --build build
+          if ! grep -q bitcode "$RANDOMIZE_READDIR_LOG".*; then
+            echo "amdgcn bitcode not accessed, is librandomize_readdir properly set up?"
+            exit 1
+          fi
+
+      - name: Output
+        run: |
+          export LD_PRELOAD=$PWD/target/debug/librandomize_readdir.so
+          ${RSTASH_PATH} --show-stats
+
+      - name: Test Twice for Cache Read
+        run: |
+          export LD_PRELOAD=$PWD/target/debug/librandomize_readdir.so
+          rm "$RANDOMIZE_READDIR_LOG".*
+          rm -rf build
+          cmake -B build -S tests/cmake-hip -DCMAKE_HIP_COMPILER_LAUNCHER=${RSTASH_PATH} -DCMAKE_HIP_ARCHITECTURES=gfx900
+          cmake --build build
+          if ! grep -q bitcode "$RANDOMIZE_READDIR_LOG".*; then
+            echo "amdgcn bitcode not accessed, is librandomize_readdir properly set up?"
+            exit 1
+          fi
+
+      - name: Output
+        run: |
+          export LD_PRELOAD=$PWD/target/debug/librandomize_readdir.so
+          ${RSTASH_PATH} --show-stats
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  gcc:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      RSTASH_GHA_ENABLED: "on"
+      RSTASH_SERVER_UDS: "/home/runner/rstash.socket"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Cache Env
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_RESULTS_URL', process.env.ACTIONS_RESULTS_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '')
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Test
+        run: |
+          export CXX="${RSTASH_PATH} g++"
+          $CXX -c `pwd`/tests/test_clang_multicall.c
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+      - name: Test Twice for Cache Read
+        run: |
+          export CXX="${RSTASH_PATH} g++"
+          $CXX -c `pwd`/tests/test_clang_multicall.c
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  autotools:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      RSTASH_GHA_ENABLED: "on"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Cache Env
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_RESULTS_URL', process.env.ACTIONS_RESULTS_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '')
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          ## Install dependencies
+          sudo apt-get update
+          sudo apt-get install autoconf automake libtool
+
+      - name: Test
+        run: |
+          cd `pwd`/tests/autotools/
+          autoreconf||true
+          automake --add-missing
+          ./configure CXX="${RSTASH_PATH} g++"
+          make
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+      - name: Test Twice for Cache Read
+        run: |
+          cd `pwd`/tests/autotools/
+          make distclean
+          ./configure CXX="${RSTASH_PATH} g++"
+          make
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  cmake:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      RSTASH_GHA_ENABLED: "on"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Cache Env
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_RESULTS_URL', process.env.ACTIONS_RESULTS_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '')
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          ## Install dependencies
+          sudo apt-get update
+          sudo apt-get install cmake
+
+      - name: Test
+        run: |
+          cd `pwd`/tests/cmake/
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER_LAUNCHER=${RSTASH_PATH} -DCMAKE_CXX_COMPILER_LAUNCHER=${RSTASH_PATH} ..
+          make
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+      - name: Test Twice for Cache Read
+        run: |
+          cd `pwd`/tests/cmake/
+          rm -rf build
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER_LAUNCHER=${RSTASH_PATH} -DCMAKE_CXX_COMPILER_LAUNCHER=${RSTASH_PATH} ..
+          make
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  # The test cargo "cargo build -Zprofile"
+  rust-test-Z-profile:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+      CARGO_INCREMENTAL: "0"
+      RUSTFLAGS: "-Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort -Zprofile"
+      RUSTDOCFLAGS: "-Cpanic=abort"
+      # The last nightly rust that still support "-Zprofile"
+      #
+      # See https://github.com/rust-lang/rust/pull/131829
+      RUST_TEST_TOOLCHAIN: nightly-2024-11-01
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: ${{ env.RUST_TEST_TOOLCHAIN }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: "Coverage test #1"
+        run: cargo +${{ env.RUST_TEST_TOOLCHAIN }} clean && cargo +${{ env.RUST_TEST_TOOLCHAIN }} build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+      - name: "Coverage test #2"
+        run: cargo +${{ env.RUST_TEST_TOOLCHAIN }} clean && cargo +${{ env.RUST_TEST_TOOLCHAIN }} build
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
+
+  zstd-compression-level:
+    runs-on: ubuntu-24.04
+    needs: build
+
+    env:
+      RUSTC_WRAPPER: /home/runner/.cargo/bin/rstash
+      RSTASH_DIR:
+      CARGO_INCREMENTAL: "0"
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-tests
+          path: /home/runner/.cargo/bin/
+      - name: Chmod for binary
+        run: chmod +x ${RSTASH_PATH}
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - name: default-test-save
+        run: |
+          export RSTASH_DIR=${PWD}/temp-test/zstd-level/default
+          cargo build
+      - name: default-stats-save
+        run: ${RSTASH_PATH} --show-stats
+      - name: default-test-use
+        run: |
+          cargo clean && cargo build
+      - name: default-stats-use
+        run: ${RSTASH_PATH} --show-stats
+      - name: lv10-test-save
+        run: |
+          export RSTASH_DIR=${PWD}/temp-test/zstd-level/10
+          export RSTASH_CACHE_ZSTD_LEVEL=10
+          ${RSTASH_PATH} --stop-server > /dev/null
+          cargo clean
+          cargo build
+      - name: lv10-stats-save
+        run: ${RSTASH_PATH} --show-stats
+      - name: lv10-test-use
+        run: |
+          cargo clean && cargo build
+      - name: lv10-stats-use
+        run: ${RSTASH_PATH} --show-stats
+
+  xcode:
+    runs-on: macos-latest
+    env:
+      RSTASH_PATH: target/debug/rstash
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install rust
+        uses: ./.github/actions/rust-toolchain
+        with:
+          toolchain: "stable"
+
+      - name: Build rstash
+        run: |
+          cargo build
+
+      - name: Start server
+        run: ${RSTASH_PATH} --start-server
+
+      - name: Test compile xcode
+        working-directory: tests/xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -xcconfig rstash.xcconfig
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+
+      - name: Test compile xcode cached
+        working-directory: tests/xcode
+        run: |
+          xcodebuild clean
+          xcodebuild -xcconfig rstash.xcconfig
+
+      - name: Output
+        run: |
+          ${RSTASH_PATH} --show-stats
+          ${RSTASH_PATH} --show-stats | grep -e "Cache hits\s*[1-9]"
