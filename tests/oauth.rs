@@ -30,18 +30,16 @@ const TEST_PASSWORD: &str = "test1234";
 fn generate_code_grant_pkce_auth_config() -> rstash::config::DistAuth {
     rstash::config::DistAuth::Oauth2CodeGrantPKCE {
         client_id: "Xmbl6zRW1o1tJ5LQOz0p65NwY47aMO7A".to_owned(),
-        auth_url:
-            "https://rstash-test.auth0.com/authorize?audience=https://rstash-dist-test-api/"
-                .to_owned(),
+        auth_url: "https://rstash-test.auth0.com/authorize?audience=https://rstash-dist-test-api/"
+            .to_owned(),
         token_url: "https://rstash-test.auth0.com/oauth/token".to_owned(),
     }
 }
 fn generate_implicit_auth_config() -> rstash::config::DistAuth {
     rstash::config::DistAuth::Oauth2Implicit {
         client_id: "TTborSAyjBnSi1W11201ZzNu9gSg63bq".to_owned(),
-        auth_url:
-            "https://rstash-test.auth0.com/authorize?audience=https://rstash-dist-test-api/"
-                .to_owned(),
+        auth_url: "https://rstash-test.auth0.com/authorize?audience=https://rstash-dist-test-api/"
+            .to_owned(),
     }
 }
 

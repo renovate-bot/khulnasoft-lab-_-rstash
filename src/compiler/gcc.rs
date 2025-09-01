@@ -1,4 +1,4 @@
-// Copyright 2016 Mozilla Foundation
+// Copyright 2025 KhulnaSoft, Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2121,10 +2121,7 @@ mod test {
 
     #[test]
     fn at_signs() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         File::create(td.path().join("foo"))
             .unwrap()
             .write_all(

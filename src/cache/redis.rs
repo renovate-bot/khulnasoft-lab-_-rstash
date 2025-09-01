@@ -1,4 +1,4 @@
-// Copyright 2016 Mozilla Foundation
+// Copyright 2025 KhulnaSoft, Ltd
 // Copyright 2016 Felix Obenhuber <felix@obenhuber.de>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

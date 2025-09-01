@@ -1,4 +1,4 @@
-// Copyright 2016 Mozilla Foundation
+// Copyright 2025 KhulnaSoft, Ltd
 // SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -180,11 +180,7 @@ impl CompileCommandImpl for SingleCompileCommand {
         self.cwd.clone()
     }
 
-    async fn execute<T>(
-        &self,
-        _: &server::RstashService<T>,
-        creator: &T,
-    ) -> Result<process::Output>
+    async fn execute<T>(&self, _: &server::RstashService<T>, creator: &T) -> Result<process::Output>
     where
         T: CommandCreatorSync,
     {

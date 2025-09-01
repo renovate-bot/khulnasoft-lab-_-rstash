@@ -1,4 +1,4 @@
-// Copyright 2016 Mozilla Foundation
+// Copyright 2025 KhulnaSoft, Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -189,8 +189,7 @@ fn get_clap_command() -> clap::Command {
 pub fn try_parse() -> Result<Command> {
     trace!("parse");
 
-    let cwd =
-        env::current_dir().context("rstash: Couldn't determine current working directory")?;
+    let cwd = env::current_dir().context("rstash: Couldn't determine current working directory")?;
 
     // We only care if it's `1`
     let internal_start_server = env::var(ENV_VAR_INTERNAL_START_SERVER).as_deref() == Ok("1");

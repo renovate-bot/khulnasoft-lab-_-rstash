@@ -709,10 +709,7 @@ mod test {
 
     #[test]
     fn test_at_signs_file_not_readable() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         let arg = format!("-@{}", td.path().join("foo").display());
         // File foo doesn't exist.
         assert_eq!(
@@ -723,10 +720,7 @@ mod test {
 
     #[test]
     fn test_at_signs_file() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         File::create(td.path().join("foo"))
             .unwrap()
             .write_all(b"-c foo.c -o foo.o")

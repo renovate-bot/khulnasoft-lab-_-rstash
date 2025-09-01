@@ -311,10 +311,7 @@ mod client {
 
         #[test]
         fn test_client_toolchains_custom() {
-            let td = tempfile::Builder::new()
-                .prefix("rstash")
-                .tempdir()
-                .unwrap();
+            let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
 
             let ct1 =
                 create_file(td.path(), "ct1", |mut f| f.write_all(b"toolchain_contents")).unwrap();
@@ -342,10 +339,7 @@ mod client {
 
         #[test]
         fn test_client_toolchains_custom_multiuse_archive() {
-            let td = tempfile::Builder::new()
-                .prefix("rstash")
-                .tempdir()
-                .unwrap();
+            let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
 
             let ct1 =
                 create_file(td.path(), "ct1", |mut f| f.write_all(b"toolchain_contents")).unwrap();
@@ -403,10 +397,7 @@ mod client {
 
         #[test]
         fn test_client_toolchains_nodist() {
-            let td = tempfile::Builder::new()
-                .prefix("rstash")
-                .tempdir()
-                .unwrap();
+            let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
 
             let client_toolchains = ClientToolchains::new(
                 &td.path().join("cache"),
@@ -428,10 +419,7 @@ mod client {
 
         #[test]
         fn test_client_toolchains_custom_nodist_conflict() {
-            let td = tempfile::Builder::new()
-                .prefix("rstash")
-                .tempdir()
-                .unwrap();
+            let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
 
             let ct1 =
                 create_file(td.path(), "ct1", |mut f| f.write_all(b"toolchain_contents")).unwrap();

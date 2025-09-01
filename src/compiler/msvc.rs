@@ -1,4 +1,4 @@
-// Copyright 2016 Mozilla Foundation
+// Copyright 2025 KhulnaSoft, Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2094,10 +2094,7 @@ mod test {
 
     #[test]
     fn test_responsefile_absolute_path() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         let cmd_file_path = td.path().join("foo");
         {
             let mut file = File::create(&cmd_file_path).unwrap();
@@ -2184,10 +2181,7 @@ mod test {
 
     #[test]
     fn test_responsefile_with_quotes() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         let cmd_file_path = td.path().join("foo");
         {
             let mut file = File::create(&cmd_file_path).unwrap();
@@ -2226,10 +2220,7 @@ mod test {
 
     #[test]
     fn test_responsefile_multiline() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         let cmd_file_path = td.path().join("foo");
         {
             let mut file = File::create(&cmd_file_path).unwrap();
@@ -2268,10 +2259,7 @@ mod test {
 
     #[test]
     fn test_responsefile_multiline_cr() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         let cmd_file_path = td.path().join("foo");
         {
             let mut file = File::create(&cmd_file_path).unwrap();
@@ -2310,10 +2298,7 @@ mod test {
 
     #[test]
     fn test_responsefile_encoding_utf16le() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         let cmd_file_path = td.path().join("foo");
         {
             let mut file = File::create(&cmd_file_path).unwrap();
@@ -2359,10 +2344,7 @@ mod test {
 
     #[test]
     fn test_responsefile_encoding_win1252() {
-        let td = tempfile::Builder::new()
-            .prefix("rstash")
-            .tempdir()
-            .unwrap();
+        let td = tempfile::Builder::new().prefix("rstash").tempdir().unwrap();
         let cmd_file_path = td.path().join("foo");
         {
             let mut file = File::create(&cmd_file_path).unwrap();

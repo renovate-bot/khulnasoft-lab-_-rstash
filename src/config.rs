@@ -1,4 +1,4 @@
-// Copyright 2016 Mozilla Foundation
+// Copyright 2025 KhulnaSoft, Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -684,8 +684,7 @@ fn config_from_env() -> Result<EnvConfig> {
         }
     };
 
-    if env::var_os("RSTASH_REDIS_EXPIRATION").is_some()
-        && env::var_os("RSTASH_REDIS_TTL").is_some()
+    if env::var_os("RSTASH_REDIS_EXPIRATION").is_some() && env::var_os("RSTASH_REDIS_TTL").is_some()
     {
         bail!("You mustn't set both RSTASH_REDIS_EXPIRATION and RSTASH_REDIS_TTL. Use only one.");
     }

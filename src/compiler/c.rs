@@ -1,4 +1,4 @@
-// Copyright 2016 Mozilla Foundation
+// Copyright 2025 KhulnaSoft, Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -427,9 +427,7 @@ where
             }
 
             if can_use_preprocessor_cache_mode && !use_preprocessor_cache_mode {
-                debug!(
-                    "parse_arguments: Disabling preprocessor cache because RSTASH_DIRECT=false"
-                );
+                debug!("parse_arguments: Disabling preprocessor cache because RSTASH_DIRECT=false");
             }
 
             use_preprocessor_cache_mode
