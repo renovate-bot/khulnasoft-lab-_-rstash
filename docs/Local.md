@@ -1,6 +1,6 @@
 # Local
 
-rstash defaults to using local disk storage. You can set the `RSTASH_DIR` environment variable to change the disk cache location. By default it will use a sensible location for the current platform: `~/.cache/rstash` on Linux, `%LOCALAPPDATA%\Mozilla\rstash` on Windows, and `~/Library/Caches/Mozilla.rstash` on MacOS.
+rstash defaults to using local disk storage. You can set the `RSTASH_DIR` environment variable to change the disk cache location. By default it will use a sensible location for the current platform: `~/.cache/rstash` on Linux, `%LOCALAPPDATA%\KhulnaSoft\rstash` on Windows, and `~/Library/Caches/KhulnaSoft.rstash` on MacOS.
 
 The default cache size is 10 gigabytes. To change this, set `RSTASH_CACHE_SIZE`, for example `RSTASH_CACHE_SIZE="1G"`.
 

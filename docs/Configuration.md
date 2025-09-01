@@ -113,8 +113,8 @@ rstash looks for its configuration file at the path indicated by env variable `R
 
 If no such env variable is set, rstash looks at default locations as below:
 - Linux: `~/.config/rstash/config`
-- macOS: `~/Library/Application Support/Mozilla.rstash/config`
-- Windows: `%APPDATA%\Mozilla\rstash\config\config`
+- macOS: `~/Library/Application Support/KhulnaSoft.rstash/config`
+- Windows: `%APPDATA%\KhulnaSoft\rstash\config\config`
 
 The latest `cache.XXX` entries may be found here: https://github.com/khulnasoft-lab/rstash/blob/ffe3070f77ef3301c8ff718316e4ab017ec83042/src/config.rs#L300.
 

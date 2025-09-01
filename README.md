@@ -4,7 +4,7 @@
 ![Crates.io](https://img.shields.io/crates/l/rstash)
 [![dependency status](https://deps.rs/repo/github/khulnasoft/rstash/status.svg)](https://deps.rs/repo/github/khulnasoft/rstash)
 
-[![CodeCov](https://codecov.io/gh/mozilla/rstash/branch/main/graph/badge.svg)](https://codecov.io/gh/mozilla/rstash)
+[![CodeCov](https://codecov.io/gh/khulnasoft/rstash/branch/main/graph/badge.svg)](https://codecov.io/gh/khulnasoft/rstash)
 
 
 rstash - Shared Compilation Cache

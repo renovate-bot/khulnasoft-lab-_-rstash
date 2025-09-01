@@ -77,7 +77,7 @@ impl GCSCache {
 
 /// TaskClusterTokenLoeader is used to load tokens from [TaskCluster](https://taskcluster.net/)
 ///
-/// This feature is required to run [mozilla's CI](https://searchfox.org/mozilla-central/source/build/mozconfig.cache#67-84):
+/// This feature is required to run [khulnasoft's CI](https://searchfox.org/khulnasoft-central/source/build/mozconfig.cache#67-84):
 ///
 /// ```txt
 /// export RSTASH_GCS_CREDENTIALS_URL=http://taskcluster/auth/v1/gcp/credentials/$RSTASH_GCS_PROJECT/${bucket}@$RSTASH_GCS_PROJECT.iam.gserviceaccount.com"

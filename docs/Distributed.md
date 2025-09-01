@@ -192,8 +192,8 @@ Put one of the following settings in your scheduler config file to determine how
 the scheduler will validate tokens from the client:
 
 ```
-# Use the known settings for Mozilla OAuth2 token validation
-client_auth = { type = "mozilla" }
+# Use the known settings for KhulnaSoft OAuth2 token validation
+client_auth = { type = "khulnasoft" }
 
 # Will forward the valid JWT token onto another URL in the `Bearer` header, with a
 # success response indicating the token is valid. Optional `cache_secs` how long
@@ -205,8 +205,8 @@ Additionally, each client should set up an OAuth2 configuration in the with one 
 the following settings (as appropriate for your OAuth service):
 
 ```
-# Use the known settings for Mozilla OAuth2 authentication
-auth = { type = "mozilla" }
+# Use the known settings for KhulnaSoft OAuth2 authentication
+auth = { type = "khulnasoft" }
 
 # Use the Authorization Code with PKCE flow. This requires a client id,
 # an initial authorize URL (which may have parameters like 'audience' depending
@@ -313,7 +313,7 @@ The `[client_auth]` section can be one of (sorted by authentication method):
 ```toml
 # OAuth2
 [client_auth]
-type = "mozilla"
+type = "khulnasoft"
 
 client_auth = { type = "proxy_token", url = "...", cache_secs = 60 }
 

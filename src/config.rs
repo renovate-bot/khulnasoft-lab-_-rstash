@@ -39,7 +39,7 @@ use crate::errors::*;
 static CACHED_CONFIG_PATH: Lazy<PathBuf> = Lazy::new(CachedConfig::file_config_path);
 static CACHED_CONFIG: Mutex<Option<CachedFileConfig>> = Mutex::new(None);
 
-const ORGANIZATION: &str = "Mozilla";
+const ORGANIZATION: &str = "KhulnaSoft";
 const APP_NAME: &str = "rstash";
 const DIST_APP_NAME: &str = "rstash-dist-client";
 const TEN_GIGS: u64 = 10 * 1024 * 1024 * 1024;
@@ -451,7 +451,7 @@ pub enum DistAuth {
     Oauth2Implicit { client_id: String, auth_url: String },
 }
 
-// Convert a type = "mozilla" immediately into an actual oauth configuration
+// Convert a type = "khulnasoft" immediately into an actual oauth configuration
 // https://github.com/serde-rs/serde/issues/595 could help if implemented
 impl<'a> Deserialize<'a> for DistAuth {
     fn deserialize<D>(deserializer: D) -> StdResult<Self, D::Error>

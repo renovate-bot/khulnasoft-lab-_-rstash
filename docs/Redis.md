@@ -23,7 +23,7 @@ Set `RSTASH_REDIS_EXPIRATION` in seconds if you don't want your cache to live fo
 Set `RSTASH_REDIS_KEY_PREFIX` if you want to prefix all cache keys. This can be
 useful when sharing a Redis instance with another application or cache.
 
-`RSTASH_REDIS` is deprecated for security reasons, use `RSTASH_REDIS_ENDPOINT` instead. See mozilla/rstash#2083 for details.
+`RSTASH_REDIS` is deprecated for security reasons, use `RSTASH_REDIS_ENDPOINT` instead. See khulnasoft/rstash#2083 for details.
 If you really want to use `RSTASH_REDIS`, you should URL in format `redis://[[<username>]:<passwd>@]<hostname>[:port][/?db=<db>]`.
 
 ## Deprecated API Examples

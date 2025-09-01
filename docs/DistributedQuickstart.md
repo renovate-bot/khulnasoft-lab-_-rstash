@@ -38,19 +38,19 @@ type = "jwt_hs256"
 secret_key = "my secret key"
 ```
 
-Mozilla build servers will typically require clients to be authenticated with the
-[Mozilla identity system](https://github.com/mozilla-iam/mozilla-iam).
+KhulnaSoft build servers will typically require clients to be authenticated with the
+[KhulnaSoft identity system](https://github.com/khulnasoft-iam/khulnasoft-iam).
 
 To configure for scheduler for this, the `client_auth` section should be as follows
-so any client tokens are validated with the Mozilla service:
+so any client tokens are validated with the KhulnaSoft service:
 
 ```
 [client_auth]
-type = "mozilla"
+type = "khulnasoft"
 required_groups = ["group_name"]
 ```
 
-Where `group_name` is a Mozilla LDAP group. Users will be required to belong to this group to successfully authenticate with the scheduler.
+Where `group_name` is a KhulnaSoft LDAP group. Users will be required to belong to this group to successfully authenticate with the scheduler.
 
 Start the scheduler by running:
 ```
@@ -107,7 +107,7 @@ A client uses `rstash` to wrap compile commands, communicates with the scheduler
 
 Clients that are not targeting linux64 require the `icecc-create-env` script or should be provided with an archive. `icecc-create-env` is part of `icecream` for packaging toolchains. You can install icecream to get this script (`apt install icecc` on Ubuntu), or download it from the git repository and place it in your `PATH`: `curl https://raw.githubusercontent.com/icecc/icecream/master/client/icecc-create-env.in > icecc-create-env && chmod +x icecc-create-env`. See [using custom toolchains](#using-custom-toolchains).
 
-Create a client config file in `~/.config/rstash/config` (on Linux), `~/Library/Application Support/Mozilla.rstash/config` (on macOS), or `%APPDATA%\Mozilla\rstash\config\config` (on Windows). A minimal example looks like:
+Create a client config file in `~/.config/rstash/config` (on Linux), `~/Library/Application Support/KhulnaSoft.rstash/config` (on macOS), or `%APPDATA%\KhulnaSoft\rstash\config\config` (on Windows). A minimal example looks like:
 ```toml
 [dist]
 # The URL used to connect to the scheduler (should use https, given an ideal
@@ -125,14 +125,14 @@ type = "token"
 token = "my client token"
 ```
 
-Clients using Mozilla build servers should configure their `dist.auth` section as follows:
+Clients using KhulnaSoft build servers should configure their `dist.auth` section as follows:
 
 ```
 [dist.auth]
-type = "mozilla"
+type = "khulnasoft"
 ```
 
-And retrieve a token from the Mozilla identity service by running `rstash --dist-auth`
+And retrieve a token from the KhulnaSoft identity service by running `rstash --dist-auth`
 and following the instructions. Completing this process will retrieve and cache a token
 valid for 7 days.
 
@@ -143,7 +143,7 @@ You can check the status with `rstash --dist-status`, it should say something li
 
 ```
 $ rstash --dist-status
-{"SchedulerStatus":["https://rstash1.corpdmz.ber3.mozilla.com/",{"num_servers":3,"num_cpus":56,"in_progress":24}]}
+{"SchedulerStatus":["https://rstash1.corpdmz.ber3.khulnasoft.com/",{"num_servers":3,"num_cpus":56,"in_progress":24}]}
 ```
 
 Using custom toolchains
@@ -188,7 +188,7 @@ Where:
 A toolchain archive should be a Gzip compressed TAR archive, containing a filesystem
 sufficient to run the compiler without relying on any external files. If you have archives
 compatible with icecream (created with `icecc-create-env`, like
-[these ones](https://github.com/jyavenard/mozilla-icecream) for macOS), they should also work
+[these ones](https://github.com/jyavenard/khulnasoft-icecream) for macOS), they should also work
 with rstash. To create a Windows toolchain, it is recommended that you download the [Clang
 binaries for Ubuntu 16.04](http://releases.llvm.org/download.html) and extract them,
 package up the toolchain using the extracted `bin/clang` file (requires
@@ -206,7 +206,7 @@ may be required:
 - An explicit toolchain archive will need to be configured, as described above.
   In case rust is being cached, the same version of `rustc` will need to be used
   for local compiles as is found in the distributed archive.
-- The client config will be read from `~/Library/Application Support/Mozilla.rstash/config`,
+- The client config will be read from `~/Library/Application Support/KhulnaSoft.rstash/config`,
   not `~/.config/rstash/config`.
 - Some cross compilers may not understand some intrinsics used in more recent macOS
   SDKs. The 10.11 SDK is known to work.

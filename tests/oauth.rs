@@ -101,7 +101,7 @@ impl DriverExt for WebDriver {
     }
 }
 
-// With reference to https://github.com/mozilla-iam/cis_tests/blob/ef7740b/pages/auth0.py
+// With reference to https://github.com/khulnasoft-iam/cis_tests/blob/ef7740b/pages/auth0.py
 fn auth0_login(driver: &WebDriver, email: &str, password: &str) {
     driver.wait_for_element(USERNAME_SELECTOR).unwrap();
     thread::sleep(Duration::from_secs(1)); // Give the element time to get ready

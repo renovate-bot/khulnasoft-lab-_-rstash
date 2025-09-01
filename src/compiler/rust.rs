@@ -645,7 +645,7 @@ impl RustupProxy {
         // The test for rustc being a proxy or not is done as follows
         // and follow firefox rustc detection closely:
         //
-        // https://searchfox.org/mozilla-central/rev/c79c0d65a183d9d38676855f455a5c6a7f7dadd3/build/moz.configure/rust.configure#23-80
+        // https://searchfox.org/khulnasoft-central/rev/c79c0d65a183d9d38676855f455a5c6a7f7dadd3/build/moz.configure/rust.configure#23-80
         //
         // which boils down to
         //
@@ -1953,13 +1953,13 @@ fn maybe_add_cargo_toml(input_path: &Path, verify: bool) -> Option<PathBuf> {
 fn test_maybe_add_cargo_toml() {
     let (root, result_cargo_toml_path) = if cfg!(windows) {
         (
-            r"C:\mozilla-source\mozilla-unified\third_party\rust",
-            r"C:\mozilla-source\mozilla-unified\third_party\rust\wgpu-core\Cargo.toml",
+            r"C:\khulnasoft-source\khulnasoft-unified\third_party\rust",
+            r"C:\khulnasoft-source\khulnasoft-unified\third_party\rust\wgpu-core\Cargo.toml",
         )
     } else {
         (
-            "/home/user/mozilla-source/mozilla-unified/third_party/rust",
-            "/home/user/mozilla-source/mozilla-unified/third_party/rust/wgpu-core/Cargo.toml",
+            "/home/user/khulnasoft-source/khulnasoft-unified/third_party/rust",
+            "/home/user/khulnasoft-source/khulnasoft-unified/third_party/rust/wgpu-core/Cargo.toml",
         )
     };
 
